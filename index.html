@@ -469,8 +469,8 @@
 </div>
 
 <script>
-// ========== GEMINI API KEY ==========
-const GEMINI_API_KEY = "AIzaSyBM_un79HN2iz77HG_K-QEdt05ioCSFX6Y";
+// ========== OPENROUTER API KEY ==========
+const OPENROUTER_API_KEY = "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";
 
 // ===== MOISTURE + MOOD =====
 let currentMoisture = 70;
@@ -546,26 +546,50 @@ async function identifyPlant() {
 {"name":"اسم النبتة","scientificName":"الاسم العلمي","wateringFrequency":"مثال: كل 3 أيام","sunlight":"مثال: ضوء غير مباشر","care":"نصيحة قصيرة","tags":["وسم1","وسم2","وسم3"]}
 إذا لم تكن نبتة: {"name":"لم يتم التعرف على نبتة","scientificName":"","wateringFrequency":"-","sunlight":"-","care":"-","tags":[]}`;
 
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { inline_data: { mime_type: capturedMimeType, data: capturedImageBase64 } },
-                            { text: prompt }
-                        ]
-                    }]
-                })
-            }
-        );
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                "HTTP-Referer": window.location.href,
+                "X-Title": "Plant Identifier"
+            },
+            body: JSON.stringify({
+                model: "google/gemini-2.0-flash-exp:free",
+                messages: [{
+                    role: "user",
+                    content: [
+                        { type: "image_url", image_url: { url: `data:${capturedMimeType};base64,${capturedImageBase64}` } },
+                        { type: "text", text: prompt }
+                    ]
+                }]
+            })
+        });
 
         const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        if (data.error) {
+            showToast('⚠️ ' + data.error.message);
+            btn.disabled = false;
+            btn.innerHTML = '🔍 فحص وتحليل النبتة';
+            return;
+        }
+
+        const text = data.choices?.[0]?.message?.content || '';
+        if (!text) {
+            showToast('⚠️ لم يرجع الذكاء الاصطناعي نتيجة');
+            btn.disabled = false;
+            btn.innerHTML = '🔍 فحص وتحليل النبتة';
+            return;
+        }
         const cleaned = text.replace(/```json|```/g, '').trim();
-        const plant = JSON.parse(cleaned);
+        let plant;
+        try { plant = JSON.parse(cleaned); } catch(pe) {
+            showToast('⚠️ خطأ في تحليل البيانات');
+            btn.disabled = false;
+            btn.innerHTML = '🔍 فحص وتحليل النبتة';
+            return;
+        }
 
         document.getElementById('scanPlantName').textContent =
             plant.name + (plant.scientificName ? ` (${plant.scientificName})` : '');
@@ -589,7 +613,7 @@ async function identifyPlant() {
 
     } catch (e) {
         console.error(e);
-        showToast('⚠️ تعذّر الفحص، حاول مجدداً');
+        showToast('⚠️ ' + (e.message || 'خطأ غير معروف'));
     }
 
     btn.disabled = false;
