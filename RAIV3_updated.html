@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشروع نظام ري النباتات الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d6a4f;
+            --primary-light: #40916c;
+            --primary-dark: #1b4332;
+            --secondary: #2c3e50;
+            --accent: #d4a373;
+            --bg-main: #f4f7f5;
+            --bg-card: #ffffff;
+            --text-dark: #1b4332;
+            --border: #d8e2dc;
+            --shadow: rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg-main);
+            min-height: 100vh;
+            padding: 20px 15px;
+            color: var(--text-dark);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* PLANT HERO */
+        .plant-hero {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            text-align: center;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .plant-emoji {
+            font-size: 65px;
+            display: inline-block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .plant-mood {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .moisture-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .moisture-wrap {
+            background: #eee;
+            border-radius: 20px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+
+        .moisture-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #74c69d, var(--primary));
+            transition: width 0.7s ease-in-out;
+        }
+
+        .moisture-hint {
+            font-size: 11px;
+            color: #888;
+        }
+
+        /* CARD STYLE */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .card-icon.green  { background: #e8f5e9; }
+        .card-icon.blue   { background: #e3f2fd; }
+        .card-icon.rose   { background: #fff1f2; }
+        .card-icon.gold   { background: #fff8e1; }
+        .card-icon.purple { background: #f3e5f5; }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* FIELDS */
+        .field { margin-bottom: 15px; }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        .field input, .field select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            background: #fafafa;
+        }
+
+        /* SLIDER */
+        .slider-wrap { margin-bottom: 15px; }
+        .slider-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .slider-top span:last-child { color: var(--primary); }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+            accent-color: var(--primary);
+        }
+
+        /* TOGGLE */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        .toggle-label { font-size: 14px; font-weight: 700; }
+        .toggle-sub { font-size: 11px; color: #777; }
+
+        .toggle {
+            position: relative;
+            width: 42px; height: 22px;
+        }
+
+        .toggle input { opacity: 0; width: 0; height: 0; }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #ccc;
+            border-radius: 34px;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .toggle-slider:before {
+            content: "";
+            position: absolute;
+            height: 16px; width: 16px;
+            left: 3px; bottom: 3px;
+            background: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        .toggle input:checked + .toggle-slider { background: var(--primary); }
+        .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+        /* BUTTONS */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: #e9ecef; color: var(--secondary); }
+        .btn-scan { background: #40916c; color: white; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* STATS */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            background: #f8fbf9;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+            transition: transform 0.2s, color 0.2s;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* LOG */
+        .log-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .log-list { list-style: none; max-height: 120px; overflow-y: auto; }
+        .log-list li {
+            font-size: 12px;
+            padding: 6px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .log-dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; flex-shrink: 0; }
+
+        /* CAMERA */
+        .camera-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            background: #fafafa;
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .camera-area:hover {
+            border-color: var(--primary);
+            background: #f0f9f4;
+        }
+
+        .camera-area.has-image {
+            border-style: solid;
+            border-color: var(--primary);
+        }
+
+        #cameraPreview { width: 100%; height: 180px; object-fit: cover; display: none; }
+        #cameraPreview.visible { display: block; }
+        #cameraInput { display: none; }
+        .camera-placeholder { text-align: center; color: #888; padding: 20px; }
+        .cam-icon { font-size: 30px; margin-bottom: 5px; }
+
+        /* SCAN RESULT */
+        .scan-result {
+            background: #f0fdf4;
+            border-right: 4px solid var(--primary);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+        .scan-result.visible { display: block; }
+        .scan-plant-name { font-weight: 800; color: var(--primary); font-size: 16px; margin-bottom: 6px; }
+        .scan-info { font-size: 12px; margin-top: 5px; line-height: 1.7; }
+
+        .scan-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .scan-tag {
+            background: #dcfce7;
+            color: var(--primary-dark);
+            border-radius: 100px;
+            padding: 3px 11px;
+            font-size: 11.5px;
+            font-weight: 700;
+            border: 1px solid #86efac;
+        }
+
+        /* WEATHER */
+        .weather-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .weather-item {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .weather-icon { font-size: 20px; margin-bottom: 3px; }
+        .weather-val { font-weight: 800; font-size: 14px; }
+        .weather-lbl { font-size: 10px; color: #888; }
+
+        /* REMINDER */
+        .reminder-box {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #92400e;
+        }
+
+        /* WATER DROPS ANIMATION */
+        .water-anim {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999;
+        }
+        .water-anim.active { display: block; }
+        .drop {
+            position: absolute;
+            animation: fall 1.3s ease-in forwards;
+        }
+        @keyframes fall {
+            0%   { transform: translateY(0); opacity: 1; }
+            80%  { opacity: 1; }
+            100% { transform: translateY(65vh); opacity: 0; }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: #333; color: #fff;
+            padding: 10px 20px; border-radius: 20px;
+            font-size: 13px; font-weight: 700;
+            z-index: 10000;
+            white-space: nowrap;
+        }
+
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* CONFETTI */
+        .confetti-piece {
+            position: fixed;
+            width: 8px; height: 8px;
+            border-radius: 2px;
+            animation: confettiFall 2s ease-in forwards;
+            pointer-events: none;
+            z-index: 9998;
+        }
+        @keyframes confettiFall {
+            0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="water-anim" id="waterAnim"></div>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>نظام ري النباتات <span>الذكي 🌿</span></h1>
+        <p>مشروع إدارة ورعاية النباتات آلياً</p>
+    </div>
+
+    <!-- PLANT HERO -->
+    <div class="plant-hero">
+        <span class="plant-emoji" id="plantEmoji" onclick="wigglePlant()">🌿</span>
+        <div class="plant-mood" id="plantMood">نبتتك بخير! 😊</div>
+
+        <div class="moisture-labels">
+            <span>جاف</span>
+            <span>💧 رطوبة التربة</span>
+            <span>مبتل</span>
+        </div>
+        <div class="moisture-wrap" onclick="tapMoisture(event)">
+            <div class="moisture-fill" id="moistureFill" style="width: 70%"></div>
+        </div>
+        <div class="moisture-hint">اضغط على الشريط لمحاكاة قراءة الحساس</div>
+    </div>
+
+    <!-- CAMERA CARD -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon green">📷</div>
+            <span class="card-title">فحص وتعريف النبتة</span>
+        </div>
+
+        <input type="file" id="cameraInput" accept="image/*" capture="environment">
+
+        <div class="camera-area" id="cameraArea" onclick="document.getElementById('cameraInput').click()">
+            <img id="cameraPreview" alt="صورة النبتة">
+            <div class="camera-placeholder" id="cameraPlaceholder">
+                <div class="cam-icon">📸</div>
+                <p>اضغط لالتقاط صورة للنبتة</p>
+                <span style="font-size:11px;">أو اختر من المعرض</span>
+            </div>
+        </div>
+
+        <button class="btn btn-scan" id="identifyBtn" onclick="identifyPlant()" disabled>
+            🔍 فحص وتحليل النبتة
+        </button>
+
+        <div class="scan-result" id="scanResult">
+            <div class="scan-plant-name" id="scanPlantName"></div>
+            <div class="scan-info" id="scanInfo"></div>
+            <div class="scan-tags" id="scanTags"></div>
+        </div>
+    </div>
+
+    <!-- SETTINGS CARD -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon blue">⚙️</div>
+            <span class="card-title">إعدادات السقي</span>
+        </div>
+
+        <div class="slider-wrap">
+            <div class="slider-top">
+                <span>⏱️ مدة السقي</span>
+                <span id="durationLabel">5 ثوانٍ</span>
+            </div>
+            <input type="range" id="waterAmount" min="1" max="30" value="5"
+                oninput="updateDurationLabel(this.value)">
+        </div>
+
+        <div class="field">
+            <label>⏰ وقت السقي التلقائي</label>
+            <input type="time" id="waterTime">
+        </div>
+
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">إشعار قبل السقي</div>
+                <div class="toggle-sub">تنبيه قبل 5 دقائق</div>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="notifToggle" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">السقي التلقائي</div>
+                <div class="toggle-sub">يعمل حسب الجدول</div>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="autoToggle" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">وضع الاقتصاد</div>
+                <div class="toggle-sub">تقليل كمية الماء 20%</div>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="ecoToggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+            <button class="btn btn-secondary" onclick="waterNow('يدوي')">💧 اسقِ الآن</button>
+        </div>
+    </div>
+
+    <!-- STATS CARD -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon rose">📊</div>
+            <span class="card-title">التقدم والسجل</span>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-item" onclick="animateStat('count')">
+                <div class="stat-number" id="count">0</div>
+                <div class="stat-label">إجمالي السقي</div>
+            </div>
+            <div class="stat-item" onclick="animateStat('todayCount')">
+                <div class="stat-number" id="todayCount">0</div>
+                <div class="stat-label">اليوم</div>
+            </div>
+            <div class="stat-item" onclick="animateStat('streakCount')">
+                <div class="stat-number" id="streakCount">0</div>
+                <div class="stat-label">يوم متواصل 🔥</div>
+            </div>
+        </div>
+
+        <div class="log-title">📋 آخر العمليات</div>
+        <ul class="log-list" id="logList">
+            <li class="log-empty" style="text-align:center;font-size:12px;color:#aaa;padding:10px;">لا توجد عمليات بعد</li>
+        </ul>
+    </div>
+
+    <!-- WEATHER CARD -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon gold">🌤️</div>
+            <span class="card-title">بيئة النبتة</span>
+        </div>
+        <div class="weather-row">
+            <div class="weather-item">
+                <div class="weather-icon">🌡️</div>
+                <div class="weather-val" id="wTemp">24°</div>
+                <div class="weather-lbl">الحرارة</div>
+            </div>
+            <div class="weather-item">
+                <div class="weather-icon">💧</div>
+                <div class="weather-val" id="wHumid">65%</div>
+                <div class="weather-lbl">الرطوبة</div>
+            </div>
+            <div class="weather-item">
+                <div class="weather-icon">☀️</div>
+                <div class="weather-val" id="wLight">جيد</div>
+                <div class="weather-lbl">الضوء</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHEDULE CARD -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon purple">🔔</div>
+            <span class="card-title">حالة الجدولة</span>
+        </div>
+        <div class="reminder-box">
+            <span>🌿</span>
+            <div id="reminderStatus">لم يتم ضبط وقت السقي بعد.</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ===== MOISTURE + MOOD =====
+let currentMoisture = 70;
+
+function updateMoodFromMoisture(val) {
+    const el = document.getElementById('plantEmoji');
+    const mood = document.getElementById('plantMood');
+    if (val >= 70) {
+        el.textContent = '🌸'; mood.textContent = 'نبتتك تزهر بشكل رائع! 🌟';
+    } else if (val >= 40) {
+        el.textContent = '🌿'; mood.textContent = 'نبتتك بخير! 😊';
+    } else if (val >= 20) {
+        el.textContent = '😐'; mood.textContent = 'نبتتك تحتاج ماءً قريباً 💧';
+    } else {
+        el.textContent = '🥺'; mood.textContent = 'نبتتك عطشانة جداً! اسقِها الآن 💦';
+    }
+}
+
+function tapMoisture(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const pct = Math.round((1 - clickX / rect.width) * 100);
+    const val = Math.max(5, Math.min(100, pct));
+    currentMoisture = val;
+    document.getElementById('moistureFill').style.width = val + '%';
+    updateMoodFromMoisture(val);
+    showToast('💧 رطوبة التربة: ' + val + '%');
+}
+
+function wigglePlant() {
+    const el = document.getElementById('plantEmoji');
+    el.style.transform = 'scale(1.25) rotate(12deg)';
+    setTimeout(() => { el.style.transform = 'scale(1.2) rotate(-12deg)'; }, 130);
+    setTimeout(() => { el.style.transform = 'scale(1)'; }, 260);
+    showToast('🌱 نبتتك تحيّيك! 👋');
+}
+
+// ===== SLIDER =====
+function updateDurationLabel(val) {
+    document.getElementById('durationLabel').textContent = val + ' ثوانٍ';
+}
+
+// ===== CAMERA =====
+let capturedImageBase64 = null;
+
+document.getElementById('cameraInput').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        capturedImageBase64 = e.target.result.split(',')[1];
+        const prev = document.getElementById('cameraPreview');
+        prev.src = e.target.result;
+        prev.classList.add('visible');
+        document.getElementById('cameraPlaceholder').style.display = 'none';
+        document.getElementById('cameraArea').classList.add('has-image');
+        document.getElementById('identifyBtn').disabled = false;
+        document.getElementById('scanResult').classList.remove('visible');
+    };
+    reader.readAsDataURL(file);
+});
+
+async function identifyPlant() {
+    if (!capturedImageBase64) return;
+    const btn = document.getElementById('identifyBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> جاري الفحص...';
+
+    try {
+        const response = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "claude-sonnet-4-20250514",
+                max_tokens: 1000,
+                messages: [{
+                    role: "user",
+                    content: [
+                        { type: "image", source: { type: "base64", media_type: "image/jpeg", data: capturedImageBase64 } },
+                        {
+                            type: "text",
+                            text: `أنت خبير نباتات. حلل الصورة وأجب بالعربية فقط بـ JSON خالص بدون أي نص خارجه:\n{"name":"اسم النبتة","scientificName":"الاسم العلمي","wateringFrequency":"مثال: كل 3 أيام","sunlight":"مثال: ضوء غير مباشر","care":"نصيحة قصيرة","tags":["وسم1","وسم2","وسم3"]}\nإذا لم تكن نبتة: {"name":"لم يتم التعرف على نبتة","scientificName":"","wateringFrequency":"-","sunlight":"-","care":"-","tags":[]}`
+                        }
+                    ]
+                }]
+            })
+        });
+
+        const data = await response.json();
+        const text = data.content?.find(b => b.type === 'text')?.text || '';
+        const plant = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+        document.getElementById('scanPlantName').textContent =
+            plant.name + (plant.scientificName ? ` (${plant.scientificName})` : '');
+        document.getElementById('scanInfo').innerHTML =
+            `💧 <strong>الري:</strong> ${plant.wateringFrequency}<br>` +
+            `☀️ <strong>الضوء:</strong> ${plant.sunlight}<br>` +
+            `🌿 <strong>العناية:</strong> ${plant.care}`;
+
+        const tagsEl = document.getElementById('scanTags');
+        tagsEl.innerHTML = '';
+        (plant.tags || []).forEach(t => {
+            const s = document.createElement('span');
+            s.className = 'scan-tag';
+            s.textContent = t;
+            tagsEl.appendChild(s);
+        });
+
+        document.getElementById('scanResult').classList.add('visible');
+        showToast('✅ تم فحص النبتة بنجاح!');
+        launchConfetti();
+
+    } catch (e) {
+        showToast('⚠️ تعذّر الفحص، حاول مجدداً');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '🔍 فحص وتحليل النبتة';
+}
+
+// ===== SETTINGS =====
+function saveSettings() {
+    const time   = document.getElementById('waterTime').value;
+    const amount = document.getElementById('waterAmount').value;
+    const notif  = document.getElementById('notifToggle').checked;
+    const auto   = document.getElementById('autoToggle').checked;
+    const eco    = document.getElementById('ecoToggle').checked;
+    localStorage.setItem('plantSettings', JSON.stringify({ time, amount, notif, auto, eco }));
+    if (time) document.getElementById('reminderStatus').innerText = 'تمت الجدولة يومياً الساعة: ' + time;
+    showToast('✅ تم حفظ الإعدادات بنجاح!');
+}
+
+// ===== WATERING =====
+function waterNow(mode) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    const txt = mode + ' — ' + timeStr;
+    addLog(txt);
+
+    let history = JSON.parse(localStorage.getItem('waterHistory')) || [];
+    history.push({ text: txt, date: now.toDateString() });
+    localStorage.setItem('waterHistory', JSON.stringify(history));
+    updateStats();
+
+    if (mode === 'يدوي') {
+        animateWater();
+        currentMoisture = Math.min(100, currentMoisture + 22);
+        document.getElementById('moistureFill').style.width = currentMoisture + '%';
+        updateMoodFromMoisture(currentMoisture);
+        showToast('💧 جاري سقي النبتة...');
+    }
+}
+
+function animateWater() {
+    const anim = document.getElementById('waterAnim');
+    anim.innerHTML = '';
+    anim.classList.add('active');
+    for (let i = 0; i < 14; i++) {
+        const d = document.createElement('div');
+        d.className = 'drop';
+        d.textContent = '💧';
+        d.style.left = (10 + Math.random() * 80) + '%';
+        d.style.top  = (Math.random() * 15) + '%';
+        d.style.animationDelay    = (Math.random() * 0.7) + 's';
+        d.style.fontSize = (13 + Math.random() * 14) + 'px';
+        anim.appendChild(d);
+    }
+    setTimeout(() => anim.classList.remove('active'), 2200);
+}
+
+// ===== LOG =====
+function addLog(text) {
+    const list = document.getElementById('logList');
+    const empty = list.querySelector('.log-empty');
+    if (empty) empty.remove();
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="log-dot"></span><span>${text}</span>`;
+    list.insertBefore(li, list.firstChild);
+    while (list.children.length > 10) list.removeChild(list.lastChild);
+}
+
+// ===== STATS =====
+function updateStats() {
+    const history = JSON.parse(localStorage.getItem('waterHistory')) || [];
+    document.getElementById('count').innerText = history.length;
+    const today = new Date().toDateString();
+    document.getElementById('todayCount').innerText = history.filter(h => h.date === today).length;
+
+    const days = [...new Set(history.map(h => h.date))].sort();
+    let streak = 0;
+    for (let i = days.length - 1; i >= 0; i--) {
+        const d = new Date(days[i]);
+        const exp = new Date();
+        exp.setDate(exp.getDate() - streak);
+        if (d.toDateString() === exp.toDateString()) streak++;
+        else break;
+    }
+    document.getElementById('streakCount').innerText = streak;
+}
+
+function animateStat(id) {
+    const el = document.getElementById(id);
+    el.style.transform = 'scale(1.35)';
+    el.style.color = '#f59e0b';
+    setTimeout(() => {
+        el.style.transform = 'scale(1)';
+        el.style.color = 'var(--primary)';
+    }, 280);
+}
+
+// ===== CONFETTI =====
+function launchConfetti() {
+    const colors = ['#4ade80','#16a34a','#fbbf24','#38bdf8','#a78bfa','#f87171'];
+    for (let i = 0; i < 32; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        c.style.left = (Math.random() * 100) + 'vw';
+        c.style.top = '-10px';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDelay = (Math.random() * 0.9) + 's';
+        c.style.animationDuration = (1.4 + Math.random()) + 's';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 3000);
+    }
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+    const ex = document.querySelector('.toast');
+    if (ex) ex.remove();
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2800);
+}
+
+// ===== AUTO WATERING =====
+let lastWateredMinute = '';
+setInterval(function() {
+    const s = JSON.parse(localStorage.getItem('plantSettings'));
+    if (s?.time && s?.auto !== false) {
+        const now = new Date();
+        const cur = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        if (cur === s.time && lastWateredMinute !== cur) {
+            lastWateredMinute = cur;
+            waterNow('آلي');
+        }
+    }
+}, 10000);
+
+// ===== ON LOAD =====
+window.onload = function() {
+    const s = JSON.parse(localStorage.getItem('plantSettings'));
+    if (s) {
+        if (s.time)   document.getElementById('waterTime').value = s.time;
+        if (s.amount) { document.getElementById('waterAmount').value = s.amount; updateDurationLabel(s.amount); }
+        if (s.time)   document.getElementById('reminderStatus').innerText = 'موعد السقي القادم: ' + s.time;
+        if (s.notif !== undefined) document.getElementById('notifToggle').checked = s.notif;
+        if (s.auto  !== undefined) document.getElementById('autoToggle').checked  = s.auto;
+        if (s.eco   !== undefined) document.getElementById('ecoToggle').checked   = s.eco;
+    }
+    const history = JSON.parse(localStorage.getItem('waterHistory')) || [];
+    history.slice(-10).reverse().forEach(item => addLog(item.text || item));
+    updateStats();
+    updateMoodFromMoisture(currentMoisture);
+};
+</script>
+
+</body>
+</html>
