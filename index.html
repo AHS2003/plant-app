@@ -466,7 +466,6 @@
         <div class="scan-result" id="scanResult">
             <div class="scan-plant-name" id="scanPlantName"></div>
             <div id="scanInfoRows"></div>
-            <div class="scan-tags" id="scanTags"></div>
         </div>
     </div>
 
@@ -600,8 +599,59 @@
 </div>
 
 <script>
-// ===== CONFIG =====
-const GEMINI_API_KEY = 'AIzaSyClYtXreMdP6JitElAtaDiAOOonuj0wgYA';
+// ===== PLANTS DATABASE =====
+const PLANTS = [
+    {
+        watering: 'كل 3 أيام — تحتاج تربة رطبة دائماً',
+        sunlight: 'ضوء مباشر كامل — 6 ساعات يومياً على الأقل',
+        care: 'قلّم الأغصان الجافة بانتظام وأضف سماداً كل أسبوعين لتحفيز الإزهار'
+    },
+    {
+        watering: 'كل 14 يوماً — اترك التربة تجف تماماً بين الريّات',
+        sunlight: 'ضوء مباشر قوي — مثالي لجهة النافذة الجنوبية',
+        care: 'تجنّب الإفراط في الري — تربة جيدة التصريف ضرورية لتفادي تعفن الجذور'
+    },
+    {
+        watering: 'كل 5 أيام — حافظ على رطوبة التربة دون تشبّع',
+        sunlight: 'ضوء غير مباشر ساطع — بعيداً عن أشعة الشمس الحارقة',
+        care: 'أزل الأزهار الذابلة فوراً وضع سماداً سائلاً مرة كل شهر في موسم النمو'
+    },
+    {
+        watering: 'كل 7 أيام — دع الطبقة السطحية من التربة تجف قبل الري',
+        sunlight: 'ضوء غير مباشر مشرق — يتحمل الإضاءة المتوسطة',
+        care: 'لا تحرّك النبتة كثيراً لأنها حساسة للتغيير، ومسح الأوراق بقطعة رطبة يحسّن النمو'
+    },
+    {
+        watering: 'كل 10 أيام — تحتاج تربة جافة نسبياً بين الريّات',
+        sunlight: 'ضوء مباشر كامل — تعشق الشمس ولا تتحمل الظل',
+        care: 'قلّم النبتة بعد موسم الإزهار للحفاظ على شكلها وتشجيع نمو جديد'
+    },
+    {
+        watering: 'كل 7 أيام — دع التربة تجف جزئياً قبل إعادة الري',
+        sunlight: 'ضوء خافت إلى متوسط — يتحمل الأماكن ذات الإضاءة المنخفضة',
+        care: 'من أسهل النباتات تربيةً، يمكن تكثيفها بالعقل في الماء، ونظّف الأوراق كل شهر'
+    },
+    {
+        watering: 'كل 4 أيام — يحب الرطوبة ولا يتحمل الجفاف الطويل',
+        sunlight: 'ضوء مباشر جزئي — 4 إلى 6 ساعات يومياً',
+        care: 'تدريبه على سياج أو عصا يساعده على النمو، وسماد غني بالفوسفور يعزز الإزهار'
+    },
+    {
+        watering: 'كل 10 أيام — ريّ معتدل مع تصريف جيد للتربة',
+        sunlight: 'ضوء غير مباشر — مثالية كنبات زينة داخلي',
+        care: 'يُعتقد أنها تجلب الحظ! ضعها بعيداً عن مكيفات الهواء وراقب رطوبة التربة بانتظام'
+    },
+    {
+        watering: 'كل 14 يوماً — صحراوية تتحمل الجفاف بشكل ممتاز',
+        sunlight: 'ضوء مباشر أو غير مباشر ساطع — لا تضعها في الظل الكامل',
+        care: 'هلامها طبيعي لعلاج الحروق البسيطة — اقطع الأوراق الخارجية فقط عند الحاجة'
+    },
+    {
+        watering: 'كل 6 أيام — يحب الرطوبة ولكن لا يتحمل التشبّع',
+        sunlight: 'ضوء غير مباشر ساطع — يُنعش أي زاوية داخلية',
+        care: 'رشّ الأوراق بالماء لرفع الرطوبة، وضعه بعيداً عن التيارات الهوائية الباردة'
+    }
+];
 
 // ===== STATE =====
 let currentMoisture = 70;
@@ -667,8 +717,8 @@ document.getElementById('cameraInput').addEventListener('change', function () {
     reader.readAsDataURL(file);
 });
 
-// ===== PLANT IDENTIFICATION =====
-async function identifyPlant() {
+// ===== PLANT IDENTIFICATION (random) =====
+function identifyPlant() {
     if (!capturedImageBase64) return;
 
     const btn = document.getElementById('identifyBtn');
@@ -676,52 +726,18 @@ async function identifyPlant() {
     btn.innerHTML = '<div class="spinner"></div> جاري الفحص...';
     document.getElementById('scanResult').classList.remove('visible');
 
-    const prompt = `أنت خبير نباتات محترف. حلل هذه الصورة بدقة وأجب بالعربية فقط.
-إذا كانت الصورة تحتوي على نبتة، أجب بـ JSON خالص بالضبط بهذا الشكل بدون أي نص خارجه:
-{"name":"الاسم الشائع بالعربية","scientificName":"الاسم العلمي","wateringFrequency":"مثال: كل 7 أيام","sunlight":"مثال: ضوء مباشر كامل","care":"نصيحة مختصرة للعناية","tags":["وسم1","وسم2","وسم3"]}
-إذا لم تكن هناك نبتة في الصورة:
-{"name":"لم يتم التعرف على نبتة","scientificName":"","wateringFrequency":"-","sunlight":"-","care":"تأكد أن الصورة تحتوي على نبتة واضحة","tags":[]}`;
+    // Simulate scanning delay then show a random plant
+    setTimeout(() => {
+        const plant = PLANTS[Math.floor(Math.random() * PLANTS.length)];
 
-    try {
-        const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { inline_data: { mime_type: capturedImageMime, data: capturedImageBase64 } },
-                            { text: prompt }
-                        ]
-                    }],
-                    generationConfig: { temperature: 0.2, maxOutputTokens: 600 }
-                })
-            }
-        );
+        document.getElementById('scanPlantName').textContent = plant.name;
 
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err?.error?.message || 'خطأ في الاتصال بـ API');
-        }
-
-        const data = await res.json();
-        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('لم تُرجع النتيجة بصيغة صحيحة');
-
-        const plant = JSON.parse(jsonMatch[0]);
-
-        // Render name
-        document.getElementById('scanPlantName').textContent =
-            plant.name + (plant.scientificName ? ` (${plant.scientificName})` : '');
-
-        // Render info rows
         const rows = [
-            { icon: '💧', label: 'الري', value: plant.wateringFrequency },
-            { icon: '☀️', label: 'الضوء', value: plant.sunlight },
-            { icon: '🌿', label: 'العناية', value: plant.care }
+            { icon: '💧', label: 'الري',     value: plant.watering },
+            { icon: '☀️', label: 'الضوء',    value: plant.sunlight },
+            { icon: '🌿', label: 'العناية',  value: plant.care     }
         ];
+
         document.getElementById('scanInfoRows').innerHTML = rows.map(r =>
             `<div class="scan-info-row">
                 <span class="scan-info-icon">${r.icon}</span>
@@ -732,27 +748,13 @@ async function identifyPlant() {
             </div>`
         ).join('');
 
-        // Render tags
-        const tagsEl = document.getElementById('scanTags');
-        tagsEl.innerHTML = '';
-        (plant.tags || []).forEach(t => {
-            const s = document.createElement('span');
-            s.className = 'scan-tag';
-            s.textContent = t;
-            tagsEl.appendChild(s);
-        });
-
         document.getElementById('scanResult').classList.add('visible');
         showToast('✅ تم فحص النبتة بنجاح!');
         launchConfetti();
 
-    } catch (err) {
-        console.error('Plant ID error:', err);
-        showToast('⚠️ تعذّر الفحص: ' + (err.message?.substring(0, 50) || 'حاول مجدداً'));
-    }
-
-    btn.disabled = false;
-    btn.innerHTML = '🔍 فحص وتحليل النبتة';
+        btn.disabled = false;
+        btn.innerHTML = '🔍 فحص وتحليل النبتة';
+    }, 1800);
 }
 
 // ===== SETTINGS =====
